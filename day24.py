@@ -125,7 +125,7 @@ def part2(lines):
         dir = numpy.array(list(map(int, dir.split(','))), dtype='float')
         for i, x in enumerate(dir):
             if x in seen[i]:
-                print((pos, dir), "same dir", i, seen[i][x])
+                #print((pos, dir), "same dir", i, seen[i][x])
                 differences[i].append((abs(pos[i] - seen[i][x][0][i]), x))
             seen[i][x] = (pos, dir)
 
@@ -168,34 +168,41 @@ def part2(lines):
 
         return p1 + (d1 - v) * t_ref
 
-    # Two of the values have the same z pos and dir, therefore speed must be 168
-    v = numpy.array((0,0,168))
+    v = numpy.array((0,0,0))
     ref_x = sorted(differences[0])[0]
     ref_y = sorted(differences[1])[0]
+    ref_z = sorted(differences[2])[0]
 
-    def get_ref_valid(ref):
-        for n in range(int(math.sqrt(ref[0])) + 1):
-            if ref[0] % n == 0:
-                yield n + ref[1]
-                yield -n + ref[1]
-                # yield ref[0] // n + ref[1]
-                # yield -ref[0] // n + ref[1]
-
-    for x in get_ref_valid(ref_x):
-        print("X", x)
-        v[0] = x
-        for y in get_ref_valid(ref_y):
-            print("Y", y)
-            v[1] = y
-            # for z in range(-r, r):
-            #     v[2] = z
-            res = hit_all(v)
-            if res is not None:
-                print("Found solution", sum(map(int, res)), res, v)
+    for large in (0, 1):
+        # Correct values must be an integer divisor of the distance between hailstones with the same speed (on a per axis basis)
+        def get_ref_valid(ref):
+            if ref[0] == 0:
+                yield ref[1]
                 return
+            # Small factors
+            for n in range(1, int(math.sqrt(ref[0])) + 1):
+                if ref[0] % n == 0:
+                    if large:
+                        yield ref[0] // n + ref[1]
+                        yield -ref[0] // n + ref[1]
+                    else:
+                        yield n + ref[1]
+                        yield -n + ref[1]
 
 
-    print("Found v", hit_all(numpy.array([-3, 1, 2], dtype='float')))
+        for x in get_ref_valid(ref_x):
+            print("X", x)
+            v[0] = x
+            for y in get_ref_valid(ref_y):
+                #print("Y", y)
+                v[1] = y
+                for z in get_ref_valid(ref_z):
+                    #print("Z", z)
+                    v[2] = z
+                    res = hit_all(v)
+                    if res is not None:
+                        print("Found solution", sum(map(int, res)), res, v)
+                        return
 
 
 # def wrong_part2(lines):
@@ -292,8 +299,8 @@ input = """
 12, 31, 28 @ -1, -2, -1
 20, 19, 15 @  1, -5, -3
 """
-#main(input)
-#exit(0)
+main(input)
+
 
 input = """194592040768564, 332365743938486, 196880917504399 @ 160, -81, 182
 119269259427296, 151358331038299, 32133087271013 @ 320, 350, 804
